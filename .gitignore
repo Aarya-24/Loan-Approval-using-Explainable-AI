@@ -7,3 +7,16 @@ Features.csv
 
 #files
 Prediction_model.json
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter-generated checkpoints
+.ipynb_checkpoints/
+
+# Local secrets and environment configuration
+.env
+.env.*
+!.env.example

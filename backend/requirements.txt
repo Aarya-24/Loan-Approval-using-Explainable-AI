@@ -5,3 +5,4 @@ xgboost
 shap
 google-genai
 python-dotenv
+PyMySQL

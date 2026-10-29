@@ -10,6 +10,7 @@ form.addEventListener("submit", async (event) => {
 
   const formData = new FormData(form);
   const payload = {
+    name: formData.get("name").trim(),
     age: Number(formData.get("age")),
     annual_income: Number(formData.get("annual_income")),
     credit_score: Number(formData.get("credit_score")),
@@ -57,6 +58,7 @@ function showResult(result) {
     ? "The model estimates approval"
     : "The model estimates rejection";
   document.querySelector("#result-probability").textContent = `${percent}%`;
+  document.querySelector("#result-request-id").textContent = result.loan_request_id;
   document.querySelector("#result-summary").textContent = approved
     ? "Based on the details you provided, the estimate leans toward approval."
     : "Based on the details you provided, the estimate leans toward rejection.";
@@ -152,3 +154,35 @@ document.querySelector("#try-again").addEventListener("click", () => {
   resultPanel.hidden = true;
   form.querySelector("input").focus();
 });
+
+async function lookupRequest(form, resultBox, decisionOnly) {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    resultBox.textContent = "Looking up request…";
+    const id = new FormData(form).get("loan_request_id").trim().toUpperCase();
+    try {
+      const response = await fetch(`/api/loan-requests/${encodeURIComponent(id)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Could not retrieve this request.");
+      resultBox.replaceChildren();
+      if (decisionOnly) {
+        const summary = document.createElement("p");
+        summary.textContent = `${data.name}: ${data.decision.toUpperCase()} · ${Math.round(data.probability * 100)}% estimated approval probability`;
+        resultBox.append(summary);
+      } else {
+        const list = document.createElement("dl");
+        const labels = { loan_request_id: "Loan request ID", name: "Name", age: "Age", annual_income: "Annual income", credit_score: "Credit score", employment_status: "Employment status", loan_amount: "Loan amount", collateral: "Collateral", monthly_debt: "Monthly debt payments", decision: "Decision", probability: "Approval probability", created_at: "Created" };
+        Object.entries(labels).forEach(([key, label]) => {
+          const term = document.createElement("dt"); term.textContent = label;
+          const value = document.createElement("dd");
+          value.textContent = key === "probability" ? `${Math.round(data[key] * 100)}%` : key === "annual_income" || key === "loan_amount" || key === "collateral" || key === "monthly_debt" ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(data[key]) : data[key];
+          list.append(term, value);
+        });
+        resultBox.append(list);
+      }
+    } catch (error) { resultBox.textContent = error.message; }
+  });
+}
+
+lookupRequest(document.querySelector("#full-lookup-form"), document.querySelector("#full-lookup-result"), false);
+lookupRequest(document.querySelector("#decision-lookup-form"), document.querySelector("#decision-lookup-result"), true);

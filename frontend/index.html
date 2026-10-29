@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=2">
-  <script src="/static/app.js?v=2" defer></script>
+  <link rel="stylesheet" href="/static/styles.css?v=3">
+  <script src="/static/app.js?v=3" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -18,6 +18,7 @@
     <nav aria-label="Main navigation">
       <a href="#how-it-works">How it works</a>
       <a href="#check">Check your estimate</a>
+      <a href="#lookup">Find a request</a>
     </nav>
     <a class="header-cta" href="#check">Get my estimate <span aria-hidden="true">↗</span></a>
   </header>
@@ -63,18 +64,19 @@
     </section>
 
     <section class="check-section" id="check">
-      <div class="check-intro"><div class="eyebrow light-eyebrow"><span class="eyebrow-dot"></span> Your next step starts here</div><h2>Let’s make it<br>a little clearer.</h2><p>Enter a few details for a personal estimate. It only takes a minute.</p><div class="privacy-note"><span>◈</span><p><b>Your information is handled thoughtfully.</b><br>Your details are sent to the prediction model and Google Gemini to create the estimate and explanation. This page does not store your entries.</p></div><div class="check-decoration">✳</div></div>
+      <div class="check-intro"><div class="eyebrow light-eyebrow"><span class="eyebrow-dot"></span> Your next step starts here</div><h2>Let’s make it<br>a little clearer.</h2><p>Enter a few details for a personal estimate. It only takes a minute.</p><div class="privacy-note"><span>◈</span><p><b>Your information is handled thoughtfully.</b><br>Your application details and decision are saved so you can retrieve them with your loan request ID. Explanations are not saved.</p></div><div class="check-decoration">✳</div></div>
       <div class="form-panel">
         <div class="form-heading"><div><span class="form-kicker">PERSONAL LOAN ESTIMATE</span><h3>Your details</h3></div><span class="step-pill">ABOUT 1 MIN</span></div>
         <form id="prediction-form">
           <div class="form-grid">
+            <label>Name <span class="input-wrap"><input name="name" type="text" maxlength="120" placeholder="Your name" required></span></label>
             <label>Age <span class="input-wrap"><input name="age" type="number" min="18" max="100" placeholder="e.g. 32" required><span class="input-suffix">years</span></span></label>
             <label>Credit score <span class="input-wrap"><input name="credit_score" type="number" min="300" max="850" placeholder="300–850" required><span class="input-help">Usually between 300 and 850</span></span></label>
-            <label>Annual income <span class="input-wrap money"><span class="input-prefix">$</span><input name="annual_income" type="number" min="1" step="0.01" placeholder="e.g. 65,000" required></span></label>
+            <label>Annual income <span class="input-wrap money"><span class="input-prefix">₹</span><input name="annual_income" type="number" min="1" step="0.01" placeholder="e.g. 6,50,000" required></span></label>
             <label>Employment status <span class="input-wrap select-wrap"><select name="employment_status" required><option value="" disabled selected>Select one</option><option>Employed</option><option>Self-Employed</option><option>Unemployed</option></select></span></label>
-            <label>Loan amount requested <span class="input-wrap money"><span class="input-prefix">$</span><input name="loan_amount" type="number" min="1" step="0.01" placeholder="e.g. 20,000" required></span></label>
-            <label>Collateral value <span class="input-wrap money"><span class="input-prefix">$</span><input name="collateral" type="number" min="0" step="0.01" placeholder="0 if none" required></span></label>
-            <label class="full-field">Current monthly debt payments <span class="input-wrap money"><span class="input-prefix">$</span><input name="monthly_debt" type="number" min="0" step="0.01" placeholder="e.g. 450" required><span class="input-help">Include recurring debt payments. Enter 0 if you have none.</span></span></label>
+            <label>Loan amount requested <span class="input-wrap money"><span class="input-prefix">₹</span><input name="loan_amount" type="number" min="1" step="0.01" placeholder="e.g. 2,00,000" required></span></label>
+            <label>Collateral value <span class="input-wrap money"><span class="input-prefix">₹</span><input name="collateral" type="number" min="0" step="0.01" placeholder="0 if none" required></span></label>
+            <label class="full-field">Current monthly debt payments <span class="input-wrap money"><span class="input-prefix">₹</span><input name="monthly_debt" type="number" min="0" step="0.01" placeholder="e.g. 45,000" required><span class="input-help">Include recurring debt payments. Enter 0 if you have none.</span></span></label>
           </div>
           <div class="form-error" id="form-error" role="alert" hidden></div>
           <button class="button button-submit" type="submit"><span class="button-label">See my estimate</span><span class="button-arrow" aria-hidden="true">→</span></button>
@@ -83,6 +85,7 @@
         <section class="result-panel" id="result-panel" aria-live="polite" hidden>
           <div class="result-top"><span class="result-icon" id="result-icon">✓</span><div><span class="form-kicker">YOUR MODEL ESTIMATE</span><h3 id="result-title">Estimate ready</h3></div></div>
           <div class="result-score"><span id="result-probability">0%</span><span>estimated approval probability</span></div>
+          <p class="request-id">Loan request ID: <strong id="result-request-id"></strong></p>
           <div class="result-meter"><span id="result-meter-fill"></span></div>
           <p class="result-summary" id="result-summary"></p>
           <div class="result-divider"></div>
@@ -109,6 +112,14 @@
           <button class="button button-secondary" id="try-again" type="button">Update my details <span aria-hidden="true">↺</span></button>
           <p class="form-footnote">This estimate is for information only and does not guarantee loan approval.</p>
         </section>
+      </div>
+    </section>
+
+    <section class="lookup-section" id="lookup">
+      <div class="section-heading"><div class="eyebrow">Saved loan requests</div><h2>Find your request.</h2><p>Use your loan request ID to retrieve the information saved after prediction.</p></div>
+      <div class="lookup-grid">
+        <form class="lookup-card" id="full-lookup-form"><h3>View saved application</h3><label>Loan request ID<input name="loan_request_id" maxlength="8" placeholder="e.g. A1B2C3D4" required></label><button class="button button-submit" type="submit">Get saved information</button><div class="lookup-result" id="full-lookup-result" aria-live="polite"></div></form>
+        <form class="lookup-card" id="decision-lookup-form"><h3>Check decision only</h3><label>Loan request ID<input name="loan_request_id" maxlength="8" placeholder="e.g. A1B2C3D4" required></label><button class="button button-submit" type="submit">Get decision</button><div class="lookup-result" id="decision-lookup-result" aria-live="polite"></div></form>
       </div>
     </section>
   </main>
